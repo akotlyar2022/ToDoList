@@ -78,22 +78,22 @@ class ToDoTableViewController: UITableViewController {
         super.viewDidLoad()
         
         
-        // clear all data when App in load 
+        // clear all data when App in load
         
-//        let context = getContext()
-//        let fetchRequest: NSFetchRequest<Task> = Task.fetchRequest()
-//
-//        if let objects = try? context.fetch(fetchRequest) {
-//            for object in objects {
-//                context.delete(object)
-//            }
-//        }
-//
-//        do {
-//            try context.save()
-//        } catch let error as NSError {
-//            print(error.localizedDescription)
-//        }
+        let context = getContext()
+        let fetchRequest: NSFetchRequest<Task> = Task.fetchRequest()
+
+        if let objects = try? context.fetch(fetchRequest) {
+            for object in objects {
+                context.delete(object)
+            }
+        }
+
+        do {
+            try context.save()
+        } catch let error as NSError {
+            print(error.localizedDescription)
+        }
         
     }
 
