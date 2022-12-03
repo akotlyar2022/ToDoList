@@ -6,10 +6,11 @@
 //
 
 import UIKit
+import CoreData
 
 class ToDoTableViewController: UITableViewController {
     
-    var tasks:[String] = []
+    var tasks:[Task] = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -35,8 +36,8 @@ class ToDoTableViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-
-        cell.textLabel?.text = tasks[indexPath.row]
+        let task = tasks[indexPath.row]
+        cell.textLabel?.text = task.title
 
         return cell
     }
@@ -46,8 +47,8 @@ class ToDoTableViewController: UITableViewController {
         let alertController = UIAlertController(title: "New Task", message: "Please add new Task", preferredStyle: .alert)
         let saveAction = UIAlertAction(title: "Save", style: .default) { action in
             let textField = alertController.textFields?.first
-            if let newTask = textField?.text {
-                self.tasks.insert(newTask, at: 0)
+            if let newTaskTitle = textField?.text {
+                self.saveTask(withTitle: newTaskTitle)
                 self.tableView.reloadData()
             }
         }
@@ -59,6 +60,24 @@ class ToDoTableViewController: UITableViewController {
         alertController.addAction(cancelAction)
         
         present(alertController, animated: true)
+    }
+    
+    private func saveTask(withTitle:String) {
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        let context = appDelegate.persistentContainer.viewContext
+        
+        guard let entity = NSEntityDescription.entity(forEntityName: "Task", in: context) else { return }
+        
+        let taskObject = Task(entity: entity, insertInto: context)
+        taskObject.title = title
+        
+        do {
+            try context.save()
+            
+        } catch let error as NSError {
+            print(error.localizedDescription)
+        }
+        
     }
     
 }
