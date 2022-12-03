@@ -12,14 +12,89 @@ class ToDoTableViewController: UITableViewController {
     
     var tasks:[Task] = []
 
+    @IBAction func saveTask(_ sender: UIBarButtonItem) {
+        let alertController = UIAlertController(title: "New Task", message: "Please add new Task", preferredStyle: .alert)
+        let saveAction = UIAlertAction(title: "Save", style: .default) { action in
+            let textField = alertController.textFields?.first
+            if let newTaskTitle = textField?.text {
+                self.saveTask(withTitle: newTaskTitle)
+                self.tableView.reloadData()
+            }
+        }
+        
+        alertController.addTextField { _ in }
+        let cancelAction = UIAlertAction(title: "Cancel", style: .default) { _ in }
+        
+        alertController.addAction(saveAction)
+        alertController.addAction(cancelAction)
+        
+        present(alertController, animated: true)
+    }
+    
+    private func saveTask(withTitle title: String) {
+        let context = getContext()
+
+        
+        guard let entity = NSEntityDescription.entity(forEntityName: "Task", in: context) else { return }
+        
+        let taskObject = Task(entity: entity, insertInto: context)
+        taskObject.title = title
+        
+        do {
+            try context.save()
+            tasks.append(taskObject)
+            
+        } catch let error as NSError {
+            print(error.localizedDescription)
+        }
+        
+    }
+    
+    
+    private func getContext() -> NSManagedObjectContext {
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        return appDelegate.persistentContainer.viewContext
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        let context = getContext()
+        let fetchRequest: NSFetchRequest<Task> = Task.fetchRequest()
+        let sortDescriptor = NSSortDescriptor(key: "title", ascending: false)
+        fetchRequest.sortDescriptors = [sortDescriptor]
+        
+        do {
+            tasks = try context.fetch(fetchRequest)
+        } catch let error as NSError {
+            print(error.localizedDescription)
+        }
+    }
+    
+
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem
+        
+        
+        // clear all data when App in load 
+        
+//        let context = getContext()
+//        let fetchRequest: NSFetchRequest<Task> = Task.fetchRequest()
+//
+//        if let objects = try? context.fetch(fetchRequest) {
+//            for object in objects {
+//                context.delete(object)
+//            }
+//        }
+//
+//        do {
+//            try context.save()
+//        } catch let error as NSError {
+//            print(error.localizedDescription)
+//        }
+        
     }
 
     // MARK: - Table view data source
@@ -40,44 +115,6 @@ class ToDoTableViewController: UITableViewController {
         cell.textLabel?.text = task.title
 
         return cell
-    }
-
-    
-    @IBAction func saveTask(_ sender: UIBarButtonItem) {
-        let alertController = UIAlertController(title: "New Task", message: "Please add new Task", preferredStyle: .alert)
-        let saveAction = UIAlertAction(title: "Save", style: .default) { action in
-            let textField = alertController.textFields?.first
-            if let newTaskTitle = textField?.text {
-                self.saveTask(withTitle: newTaskTitle)
-                self.tableView.reloadData()
-            }
-        }
-        
-        alertController.addTextField { _ in }
-        let cancelAction = UIAlertAction(title: "Cancel", style: .default) { _ in }
-        
-        alertController.addAction(saveAction)
-        alertController.addAction(cancelAction)
-        
-        present(alertController, animated: true)
-    }
-    
-    private func saveTask(withTitle:String) {
-        let appDelegate = UIApplication.shared.delegate as! AppDelegate
-        let context = appDelegate.persistentContainer.viewContext
-        
-        guard let entity = NSEntityDescription.entity(forEntityName: "Task", in: context) else { return }
-        
-        let taskObject = Task(entity: entity, insertInto: context)
-        taskObject.title = title
-        
-        do {
-            try context.save()
-            
-        } catch let error as NSError {
-            print(error.localizedDescription)
-        }
-        
     }
     
 }
